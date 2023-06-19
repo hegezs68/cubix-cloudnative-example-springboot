@@ -1,7 +1,7 @@
 # This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 
-name: Maven Package
+name: Maven Package publis and Docker image publish
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
     - main  
 
 jobs:
-  build:
+  maven:
 
     runs-on: ubuntu-latest
     permissions:
@@ -35,3 +35,29 @@ jobs:
       run: mvn deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload artifactory for Docker job
+      uses: action/upload-artifact@v3
+      with:
+        name: java-app
+        path: '${{ github.workspace }}/target/*.jar'
+
+  docker:
+
+    runs-on: ubuntu-latest
+    needs: maven
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifact from Maven job
+        uses: actions/download-astifact@v3
+        with:
+          name: java-app
+      - name: Logging in to Docker
+        run: docker login ghcr.io -u hegezs68 -p ${{ github.token }}
+      - name: Building the Docker image
+        run: docker build . --file Dockerfile --tag ghcr.io/hegezs68/cubix/cloudnative/demo:actions
+      - name: pUBLISHING THE Docker image
+        run: docker push ghcr.io/hegezs68/cubix/cloudnative/demo:actions
