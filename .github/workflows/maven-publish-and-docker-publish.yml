@@ -52,12 +52,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download artifact from Maven job
-        uses: actions/download-astifact@v3
+        uses: actions/download-artifact@v3
         with:
           name: java-app
       - name: Logging in to Docker
         run: docker login ghcr.io -u hegezs68 -p ${{ github.token }}
       - name: Building the Docker image
         run: docker build . --file Dockerfile --tag ghcr.io/hegezs68/cubix/cloudnative/demo:actions
-      - name: pUBLISHING THE Docker image
+      - name: Publishing the Docker image
         run: docker push ghcr.io/hegezs68/cubix/cloudnative/demo:actions
